@@ -30,10 +30,9 @@ import re
 import socket
 import subprocess
 from libqtile.config import Drag, Key, Screen, Group, Drag, Click, Rule
-from libqtile.command import lazy
+from libqtile.lazy import lazy
 from libqtile import layout, bar, widget, hook
 from libqtile.widget import Spacer
-#import arcobattery
 
 #mod4 or mod = super key
 mod = "mod4"
@@ -44,7 +43,13 @@ home = os.path.expanduser('~')
 TERMINAL = 'urxvt'
 EDITOR = 'code'
 PROGRAMS = 'rofi -show run'
+# GAPS = 15
 
+# def resize_gap(GAP,inc=True):
+#     if inc:
+#         GAP = GAP + 1 if GAP < 30 else 30
+#     else:
+#         GAP = GAP - 1 if GAP > 0 else 0
 
 @lazy.function
 def window_to_prev_group(qtile):
@@ -217,7 +222,9 @@ keys = [
 
 # FLIP LAYOUT FOR MONADTALL/MONADWIDE
     Key([mod, "shift"], "f", lazy.layout.flip()),
-
+    # Key([mod, "shift"], "a", resize_gap(inc=True)),
+    # Key([mod, "shift"], "s", resize_gap(inc=False)),
+    
 # FLIP LAYOUT FOR BSP
     Key([mod, "mod1"], "k", lazy.layout.flip_up()),
     Key([mod, "mod1"], "j", lazy.layout.flip_down()),
@@ -274,15 +281,6 @@ for i in groups:
     ])
 
 
-def init_layout_theme():
-    return {"margin":5,
-            "border_width":2,
-            "border_focus": "#5e81ac",
-            "border_normal": "#4c566a"
-            }
-
-layout_theme = init_layout_theme()
-
 # COLORS FOR THE BAR
 
 def init_colors():
@@ -317,6 +315,15 @@ def init_colors():
                         
 
 colors = init_colors()
+
+def init_layout_theme():
+    return {"margin":5,
+            "border_width":2,
+            "border_focus": colors[8][0],
+            "border_normal": colors[4][0]
+            }
+
+layout_theme = init_layout_theme()
 
 
 layouts = [
@@ -468,13 +475,13 @@ def init_widgets_list():
                #          background = colors[1]
                #          ),
                # # battery option 2  from Qtile
-               widget.Sep(
-                        linewidth = 1,
-                        padding = 30,
-                        size_percent = 50,
-                        foreground = colors[2],
-                        background = colors[1]
-                        ),
+            #    widget.Sep(
+            #             linewidth = 1,
+            #             padding = 30,
+            #             size_percent = 50,
+            #             foreground = colors[2],
+            #             background = colors[1]
+            #             ),
                
             #    widget.TextBox(
             #             font="FontAwesome",
@@ -484,16 +491,16 @@ def init_widgets_list():
             #             padding = 0,
             #             fontsize=16
             #             ),
-               widget.CPUGraph(
-                        border_color = colors[2],
-                        fill_color = colors[8],
-                        graph_color = colors[8],
-                        background=colors[1],
-                        border_width = 1,
-                        line_width = 1,
-                        core = "all",
-                        type = "box"
-                        ),
+            #    widget.CPUGraph(
+            #             border_color = colors[2],
+            #             fill_color = colors[8],
+            #             graph_color = colors[8],
+            #             background=colors[1],
+            #             border_width = 1,
+            #             line_width = 1,
+            #             core = "all",
+            #             type = "box"
+            #             ),
             #    widget.Sep(
             #             linewidth = 1,
             #             padding = 30,
