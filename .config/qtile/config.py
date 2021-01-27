@@ -27,6 +27,7 @@
 
 import os
 import re
+import requests
 import socket
 import subprocess
 from libqtile.config import Drag, Key, Screen, Group, Drag, Click, Rule
@@ -62,6 +63,7 @@ def window_to_next_group(qtile):
 keys = [
     # FUNCTION KEYS
     Key([], "F12", lazy.spawn("xfce4-terminal --drop-down")),
+
     # Bindings [mod]:
     Key([mod], "t", lazy.spawn(TERMINAL)),
     Key([mod], "Return", lazy.spawn(TERMINAL)),
@@ -70,48 +72,16 @@ keys = [
     Key([mod], "x", lazy.spawn("arcolinux-logout")),
     Key([mod], "Escape", lazy.spawn("xkill")),
     Key([mod], "F8", lazy.spawn("thunar")),
-    # lazy.window
+
     Key([mod], "f", lazy.window.toggle_fullscreen()),
     Key([mod], "q", lazy.window.kill()),
     Key([mod], "r", lazy.restart()),
-    # SUPER + SHIFT KEYS
-    # Key([mod, "shift"], "x", lazy.shutdown()),
-    # CONTROL + ALT KEYS
-    Key(["mod1", "control"], "e", lazy.spawn("arcolinux-tweak-tool")),
-    Key(["mod1", "control"], "g", lazy.spawn("chromium -no-default-browser-check")),
-    Key(["mod1", "control"], "i", lazy.spawn("nitrogen")),
-    Key(["mod1", "control"], "k", lazy.spawn("arcolinux-logout")),
-    Key(["mod1", "control"], "l", lazy.spawn("arcolinux-logout")),
-    Key(["mod1", "control"], "m", lazy.spawn("xfce4-settings-manager")),
-    Key(
-        ["mod1", "control"],
-        "o",
-        lazy.spawn(home + "/.config/qtile/scripts/picom-toggle.sh"),
-    ),
-    Key(["mod1", "control"], "p", lazy.spawn("pamac-manager")),
+
     Key(["mod1", "control"], "r", lazy.spawn("rofi-theme-selector")),
-    Key(["mod1", "control"], "s", lazy.spawn("spotify")),
-    Key(["mod1", "control"], "t", lazy.spawn("termite")),
-    Key(["mod1", "control"], "u", lazy.spawn("pavucontrol")),
-    Key(["mod1", "control"], "v", lazy.spawn("vivaldi-stable")),
-    Key(["mod1", "control"], "w", lazy.spawn("arcolinux-welcome-app")),
-    Key(["mod1", "control"], "Return", lazy.spawn("termite")),
-    # ALT + ... KEYS
-    Key(["mod1"], "f", lazy.spawn("variety -f")),
-    Key(["mod1"], "h", lazy.spawn("urxvt -e htop")),
-    Key(["mod1"], "n", lazy.spawn("variety -n")),
-    Key(["mod1"], "p", lazy.spawn("variety -p")),
-    Key(["mod1"], "t", lazy.spawn("variety -t")),
-    Key(["mod1"], "Up", lazy.spawn("variety --pause")),
-    Key(["mod1"], "Down", lazy.spawn("variety --resume")),
-    Key(["mod1"], "Left", lazy.spawn("variety -p")),
-    Key(["mod1"], "Right", lazy.spawn("variety -n")),
-    Key(["mod1"], "F2", lazy.spawn("gmrun")),
-    Key(["mod1"], "F3", lazy.spawn("xfce4-appfinder")),
 
     Key([mod2], "Print", lazy.spawn("xfce4-screenshooter")),
     Key([mod2, "shift"], "Print", lazy.spawn("gnome-screenshot -i")),
-    # MULTIMEDIA KEYS
+
     # INCREASE/DECREASE BRIGHTNESS
     Key([], "XF86MonBrightnessUp", lazy.spawn("xbacklight -inc 5")),
     Key([], "XF86MonBrightnessDown", lazy.spawn("xbacklight -dec 5")),
@@ -119,17 +89,11 @@ keys = [
     Key([], "XF86AudioMute", lazy.spawn("amixer -q set Master toggle")),
     Key([], "XF86AudioLowerVolume", lazy.spawn("amixer -q set Master 5%-")),
     Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer -q set Master 5%+")),
-    Key([], "XF86AudioPlay", lazy.spawn("playerctl play-pause")),
-    Key([], "XF86AudioNext", lazy.spawn("playerctl next")),
-    Key([], "XF86AudioPrev", lazy.spawn("playerctl previous")),
-    Key([], "XF86AudioStop", lazy.spawn("playerctl stop")),
-    #    Key([], "XF86AudioPlay", lazy.spawn("mpc toggle")),
-    #    Key([], "XF86AudioNext", lazy.spawn("mpc next")),
-    #    Key([], "XF86AudioPrev", lazy.spawn("mpc prev")),
-    #    Key([], "XF86AudioStop", lazy.spawn("mpc stop")),
+
     # QTILE LAYOUT KEYS
     Key([mod], "n", lazy.layout.normalize()),
     Key([mod], "space", lazy.next_layout()),
+
     # CHANGE FOCUS
     Key([mod], "Up", lazy.layout.up()),
     Key([mod], "Down", lazy.layout.down()),
@@ -139,6 +103,7 @@ keys = [
     Key([mod], "j", lazy.layout.down()),
     Key([mod], "h", lazy.layout.left()),
     Key([mod], "l", lazy.layout.right()),
+
     # RESIZE UP, DOWN, LEFT, RIGHT
     Key(
         [mod, "control"],
@@ -200,10 +165,9 @@ keys = [
         lazy.layout.shrink(),
         lazy.layout.increase_nmaster(),
     ),
+
     # FLIP LAYOUT FOR MONADTALL/MONADWIDE
     Key([mod, "shift"], "f", lazy.layout.flip()),
-    # Key([mod, "shift"], "a", resize_gap(inc=True)),
-    # Key([mod, "shift"], "s", resize_gap(inc=False)),
     # FLIP LAYOUT FOR BSP
     Key([mod, "mod1"], "k", lazy.layout.flip_up()),
     Key([mod, "mod1"], "j", lazy.layout.flip_down()),
@@ -225,10 +189,6 @@ keys = [
 
 groups = []
 NUM_OF_GROUPS = 5
-
-# group_names = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0",]
-# group_labels = ["", "", "", "", "", "", "", "", "", "",]
-# group_layouts = ["monadtall", "monadtall", "monadtall", "monadtall", "monadtall", "monadtall", "monadtall", "monadtall", "monadtall", "monadtall",]
 
 group_names = [str(i) for i in range(1, NUM_OF_GROUPS + 1)]
 group_labels = [str(i) for i in range(1, NUM_OF_GROUPS + 1)]
@@ -312,24 +272,24 @@ layouts = [
         margin=15, border_width=2, border_focus=colors[8][0], border_normal=colors[4][0]
     ),
     layout.MonadWide(
-        margin=8, border_width=2, border_focus=colors[8][0], border_normal=colors[4][0]
+        margin=15, border_width=2, border_focus=colors[8][0], border_normal=colors[4][0]
     ),
-    layout.Matrix(**layout_theme),
-    layout.Bsp(**layout_theme),
-    layout.Floating(**layout_theme),
-    layout.RatioTile(**layout_theme),
-    layout.Max(**layout_theme),
+    # layout.Matrix(**layout_theme),
+    # layout.Bsp(**layout_theme),
+    # layout.Floating(**layout_theme),
+    # layout.RatioTile(**layout_theme),
+    # layout.Max(**layout_theme),
 ]
 
 
 # WIDGETS FOR THE BAR
 
 
-def init_widgets_defaults():
-    return dict(font="Noto Sans", fontsize=12, padding=2, background=colors[1])
+# def init_widgets_defaults():
+#     return dict(font="Noto Sans", fontsize=12, padding=2, background=colors[1])
 
 
-widget_defaults = init_widgets_defaults()
+# widget_defaults = init_widgets_defaults()
 
 
 def init_widgets_list():
@@ -414,23 +374,40 @@ def init_widgets_list():
             foreground=colors[2],
             background=colors[1],
         ),
-        widget.Clock(
-            font=FONT_AWESOME,
-            fontsize=FONT_LARGE,
-            foreground=colors[5],
-            background=colors[1],
-            format="%d.%m.%Y",
-        ),
-        SEPERATOR,
+        
+        # widget.Clock(
+        #     font=FONT_AWESOME,
+        #     fontsize=FONT_LARGE,
+        #     foreground=colors[5],
+        #     background=colors[1],
+        #     format="%d.%m.%Y",
+        # ),
+        # SEPERATOR,
         widget.Battery(
             font=FONT_AWESOME,
             fontsize=FONT_LARGE,
             update_interval=10,
-            format="{percent:2.0%} - {hour:d}:{min:02d}",
+            format="{percent:2.0%} \uf241",
             foreground=colors[5],
             background=colors[1],
         ),
         SEPERATOR,
+        widget.NetGraph(
+            background=colors[1],
+            fill_color=colors[5],
+            border_color=colors[7][0],
+            graph_color=colors[9][0],
+            bangwidth_type='down',
+            frequency=1,
+            border_width=1,
+            interface='wlp8s0'
+            ),
+        SEPERATOR,
+        widget.TextBox(
+            text=requests.get('http://ip.42.pl/raw').text,
+            font="FontAwesome",
+            fontsize=FONT_SMALL
+        ),
         widget.Systray(background=colors[1], icon_size=20, padding=4),
     ]
     return widgets_list
@@ -574,7 +551,9 @@ floating_layout = layout.Floating(
         {"wmclass": "ssh-askpass"},
     ],
     fullscreen_border_width=0,
-    border_width=0,
+    border_width=2,
+    border_focus=colors[8][0], 
+    border_normal=colors[4][0],
 )
 auto_fullscreen = True
 
