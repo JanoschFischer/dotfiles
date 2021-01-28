@@ -26,14 +26,21 @@
 
 
 import os
-import re
-import requests
-import socket
 import subprocess
-from libqtile.config import Drag, Key, Screen, Group, Drag, Click, Rule
+from libqtile.config import Drag, Key, Screen, Group, Drag
 from libqtile.lazy import lazy
-from libqtile import layout, bar, widget, hook
+from libqtile import layout, bar, hook
 from libqtile.widget import Spacer
+
+
+from colors import init_colors
+from widgets import init_widgets_list
+from keys import init_keys
+
+
+keys = init_keys()
+widgets_list = init_widgets_list()
+colors = init_colors()
 
 # mod4 or mod = super key
 mod = "mod4"
@@ -60,132 +67,132 @@ def window_to_next_group(qtile):
         qtile.currentWindow.togroup(qtile.groups[i + 1].name)
 
 
-keys = [
-    # FUNCTION KEYS
-    Key([], "F12", lazy.spawn("xfce4-terminal --drop-down")),
+# keys = [
+#     # FUNCTION KEYS
+#     Key([], "F12", lazy.spawn("xfce4-terminal --drop-down")),
 
-    # Bindings [mod]:
-    Key([mod], "t", lazy.spawn(TERMINAL)),
-    Key([mod], "Return", lazy.spawn(TERMINAL)),
-    Key([mod], "p", lazy.spawn("rofi -show run")),
-    Key([mod], "b", lazy.spawn("brave")),
-    Key([mod], "x", lazy.spawn("arcolinux-logout")),
-    Key([mod], "Escape", lazy.spawn("xkill")),
-    Key([mod], "F8", lazy.spawn("thunar")),
+#     # Bindings [mod]:
+#     Key([mod], "t", lazy.spawn(TERMINAL)),
+#     Key([mod], "Return", lazy.spawn(TERMINAL)),
+#     Key([mod], "p", lazy.spawn("rofi -show run")),
+#     Key([mod], "b", lazy.spawn("brave")),
+#     Key([mod], "x", lazy.spawn("arcolinux-logout")),
+#     Key([mod], "Escape", lazy.spawn("xkill")),
+#     Key([mod], "F8", lazy.spawn("thunar")),
 
-    Key([mod], "f", lazy.window.toggle_fullscreen()),
-    Key([mod], "q", lazy.window.kill()),
-    Key([mod], "r", lazy.restart()),
+#     Key([mod], "f", lazy.window.toggle_fullscreen()),
+#     Key([mod], "q", lazy.window.kill()),
+#     Key([mod], "r", lazy.restart()),
 
-    Key(["mod1", "control"], "r", lazy.spawn("rofi-theme-selector")),
+#     Key(["mod1", "control"], "r", lazy.spawn("rofi-theme-selector")),
 
-    Key([mod2], "Print", lazy.spawn("xfce4-screenshooter")),
-    Key([mod2, "shift"], "Print", lazy.spawn("gnome-screenshot -i")),
+#     Key([mod2], "Print", lazy.spawn("xfce4-screenshooter")),
+#     Key([mod2, "shift"], "Print", lazy.spawn("gnome-screenshot -i")),
 
-    # INCREASE/DECREASE BRIGHTNESS
-    Key([], "XF86MonBrightnessUp", lazy.spawn("xbacklight -inc 5")),
-    Key([], "XF86MonBrightnessDown", lazy.spawn("xbacklight -dec 5")),
-    # INCREASE/DECREASE/MUTE VOLUME
-    Key([], "XF86AudioMute", lazy.spawn("amixer -q set Master toggle")),
-    Key([], "XF86AudioLowerVolume", lazy.spawn("amixer -q set Master 5%-")),
-    Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer -q set Master 5%+")),
+#     # INCREASE/DECREASE BRIGHTNESS
+#     Key([], "XF86MonBrightnessUp", lazy.spawn("xbacklight -inc 5")),
+#     Key([], "XF86MonBrightnessDown", lazy.spawn("xbacklight -dec 5")),
+#     # INCREASE/DECREASE/MUTE VOLUME
+#     Key([], "XF86AudioMute", lazy.spawn("amixer -q set Master toggle")),
+#     Key([], "XF86AudioLowerVolume", lazy.spawn("amixer -q set Master 5%-")),
+#     Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer -q set Master 5%+")),
 
-    # QTILE LAYOUT KEYS
-    Key([mod], "n", lazy.layout.normalize()),
-    Key([mod], "space", lazy.next_layout()),
+#     # QTILE LAYOUT KEYS
+#     Key([mod], "n", lazy.layout.normalize()),
+#     Key([mod], "space", lazy.next_layout()),
 
-    # CHANGE FOCUS
-    Key([mod], "Up", lazy.layout.up()),
-    Key([mod], "Down", lazy.layout.down()),
-    Key([mod], "Left", lazy.layout.left()),
-    Key([mod], "Right", lazy.layout.right()),
-    Key([mod], "k", lazy.layout.up()),
-    Key([mod], "j", lazy.layout.down()),
-    Key([mod], "h", lazy.layout.left()),
-    Key([mod], "l", lazy.layout.right()),
+#     # CHANGE FOCUS
+#     Key([mod], "Up", lazy.layout.up()),
+#     Key([mod], "Down", lazy.layout.down()),
+#     Key([mod], "Left", lazy.layout.left()),
+#     Key([mod], "Right", lazy.layout.right()),
+#     Key([mod], "k", lazy.layout.up()),
+#     Key([mod], "j", lazy.layout.down()),
+#     Key([mod], "h", lazy.layout.left()),
+#     Key([mod], "l", lazy.layout.right()),
 
-    # RESIZE UP, DOWN, LEFT, RIGHT
-    Key(
-        [mod, "control"],
-        "l",
-        lazy.layout.grow_right(),
-        lazy.layout.grow(),
-        lazy.layout.increase_ratio(),
-        lazy.layout.delete(),
-    ),
-    Key(
-        [mod, "control"],
-        "Right",
-        lazy.layout.grow_right(),
-        lazy.layout.grow(),
-        lazy.layout.increase_ratio(),
-        lazy.layout.delete(),
-    ),
-    Key(
-        [mod, "control"],
-        "h",
-        lazy.layout.grow_left(),
-        lazy.layout.shrink(),
-        lazy.layout.decrease_ratio(),
-        lazy.layout.add(),
-    ),
-    Key(
-        [mod, "control"],
-        "Left",
-        lazy.layout.grow_left(),
-        lazy.layout.shrink(),
-        lazy.layout.decrease_ratio(),
-        lazy.layout.add(),
-    ),
-    Key(
-        [mod, "control"],
-        "k",
-        lazy.layout.grow_up(),
-        lazy.layout.grow(),
-        lazy.layout.decrease_nmaster(),
-    ),
-    Key(
-        [mod, "control"],
-        "Up",
-        lazy.layout.grow_up(),
-        lazy.layout.grow(),
-        lazy.layout.decrease_nmaster(),
-    ),
-    Key(
-        [mod, "control"],
-        "j",
-        lazy.layout.grow_down(),
-        lazy.layout.shrink(),
-        lazy.layout.increase_nmaster(),
-    ),
-    Key(
-        [mod, "control"],
-        "Down",
-        lazy.layout.grow_down(),
-        lazy.layout.shrink(),
-        lazy.layout.increase_nmaster(),
-    ),
+#     # RESIZE UP, DOWN, LEFT, RIGHT
+#     Key(
+#         [mod, "control"],
+#         "l",
+#         lazy.layout.grow_right(),
+#         lazy.layout.grow(),
+#         lazy.layout.increase_ratio(),
+#         lazy.layout.delete(),
+#     ),
+#     Key(
+#         [mod, "control"],
+#         "Right",
+#         lazy.layout.grow_right(),
+#         lazy.layout.grow(),
+#         lazy.layout.increase_ratio(),
+#         lazy.layout.delete(),
+#     ),
+#     Key(
+#         [mod, "control"],
+#         "h",
+#         lazy.layout.grow_left(),
+#         lazy.layout.shrink(),
+#         lazy.layout.decrease_ratio(),
+#         lazy.layout.add(),
+#     ),
+#     Key(
+#         [mod, "control"],
+#         "Left",
+#         lazy.layout.grow_left(),
+#         lazy.layout.shrink(),
+#         lazy.layout.decrease_ratio(),
+#         lazy.layout.add(),
+#     ),
+#     Key(
+#         [mod, "control"],
+#         "k",
+#         lazy.layout.grow_up(),
+#         lazy.layout.grow(),
+#         lazy.layout.decrease_nmaster(),
+#     ),
+#     Key(
+#         [mod, "control"],
+#         "Up",
+#         lazy.layout.grow_up(),
+#         lazy.layout.grow(),
+#         lazy.layout.decrease_nmaster(),
+#     ),
+#     Key(
+#         [mod, "control"],
+#         "j",
+#         lazy.layout.grow_down(),
+#         lazy.layout.shrink(),
+#         lazy.layout.increase_nmaster(),
+#     ),
+#     Key(
+#         [mod, "control"],
+#         "Down",
+#         lazy.layout.grow_down(),
+#         lazy.layout.shrink(),
+#         lazy.layout.increase_nmaster(),
+#     ),
 
-    # FLIP LAYOUT FOR MONADTALL/MONADWIDE
-    Key([mod, "shift"], "f", lazy.layout.flip()),
-    # FLIP LAYOUT FOR BSP
-    Key([mod, "mod1"], "k", lazy.layout.flip_up()),
-    Key([mod, "mod1"], "j", lazy.layout.flip_down()),
-    Key([mod, "mod1"], "l", lazy.layout.flip_right()),
-    Key([mod, "mod1"], "h", lazy.layout.flip_left()),
-    # MOVE WINDOWS UP OR DOWN BSP LAYOUT
-    Key([mod, "shift"], "k", lazy.layout.shuffle_up()),
-    Key([mod, "shift"], "j", lazy.layout.shuffle_down()),
-    Key([mod, "shift"], "h", lazy.layout.shuffle_left()),
-    Key([mod, "shift"], "l", lazy.layout.shuffle_right()),
-    # MOVE WINDOWS UP OR DOWN MONADTALL/MONADWIDE LAYOUT
-    Key([mod, "shift"], "Up", lazy.layout.shuffle_up()),
-    Key([mod, "shift"], "Down", lazy.layout.shuffle_down()),
-    Key([mod, "shift"], "Left", lazy.layout.swap_left()),
-    Key([mod, "shift"], "Right", lazy.layout.swap_right()),
-    # TOGGLE FLOATING LAYOUT
-    Key([mod, "shift"], "space", lazy.window.toggle_floating()),
-]
+#     # FLIP LAYOUT FOR MONADTALL/MONADWIDE
+#     Key([mod, "shift"], "f", lazy.layout.flip()),
+#     # FLIP LAYOUT FOR BSP
+#     Key([mod, "mod1"], "k", lazy.layout.flip_up()),
+#     Key([mod, "mod1"], "j", lazy.layout.flip_down()),
+#     Key([mod, "mod1"], "l", lazy.layout.flip_right()),
+#     Key([mod, "mod1"], "h", lazy.layout.flip_left()),
+#     # MOVE WINDOWS UP OR DOWN BSP LAYOUT
+#     Key([mod, "shift"], "k", lazy.layout.shuffle_up()),
+#     Key([mod, "shift"], "j", lazy.layout.shuffle_down()),
+#     Key([mod, "shift"], "h", lazy.layout.shuffle_left()),
+#     Key([mod, "shift"], "l", lazy.layout.shuffle_right()),
+#     # MOVE WINDOWS UP OR DOWN MONADTALL/MONADWIDE LAYOUT
+#     Key([mod, "shift"], "Up", lazy.layout.shuffle_up()),
+#     Key([mod, "shift"], "Down", lazy.layout.shuffle_down()),
+#     Key([mod, "shift"], "Left", lazy.layout.swap_left()),
+#     Key([mod, "shift"], "Right", lazy.layout.swap_right()),
+#     # TOGGLE FLOATING LAYOUT
+#     Key([mod, "shift"], "space", lazy.window.toggle_floating()),
+# ]
 
 groups = []
 NUM_OF_GROUPS = 5
@@ -219,201 +226,23 @@ for i in groups:
     )
 
 
-# COLORS FOR THE BAR
 
-
-def init_colors():
-    colors = []
-    with open("/home/crowns/.cache/wal/colors") as f:
-        wal_col = f.read().split("\n")[:-1]
-
-    colors.append([wal_col[0], wal_col[0]])
-    colors.append([wal_col[0], wal_col[0]])
-    colors.append([wal_col[1], wal_col[1]])
-    colors.append([wal_col[1], wal_col[1]])
-    colors.append([wal_col[2], wal_col[2]])
-    colors.append([wal_col[3], wal_col[3]])
-    colors.append([wal_col[4], wal_col[4]])
-    colors.append([wal_col[5], wal_col[5]])
-    colors.append([wal_col[4], wal_col[4]])
-    colors.append([wal_col[6], wal_col[6]])
-
-    # [['#0B0D12', '#0B0D12'], 0
-    # ['#0B0D12', '#0B0D12'], 1
-    # ['#235E61', '#235E61'], 2
-    # ['#235E61', '#235E61'], 3
-    # ['#4D5151', '#4D5151'], 4
-    # ['#B22B3A', '#B22B3A'], 5
-    # ['#F00A23', '#F00A23'], 6
-    # ['#328975', '#328975'], 7
-    # ['#F00A23', '#F00A23'], 8
-    # ['#3ABDBA', '#3ABDBA']] 9
-
-    return colors
-
-
-colors = init_colors()
-
-
-def init_layout_theme():
-    return {
-        "margin": 5,
-        "border_width": 2,
-        "border_focus": colors[8][0],
-        "border_normal": colors[4][0],
-    }
-
-
-layout_theme = init_layout_theme()
 
 
 layouts = [
     layout.MonadTall(
-        margin=15, border_width=2, border_focus=colors[8][0], border_normal=colors[4][0]
+        margin=10, 
+        border_width=2, 
+        border_focus=colors[8][0], 
+        border_normal=colors[4][0],
+        ratio=0.6
     ),
-    layout.MonadWide(
-        margin=15, border_width=2, border_focus=colors[8][0], border_normal=colors[4][0]
-    ),
-    # layout.Matrix(**layout_theme),
-    # layout.Bsp(**layout_theme),
-    # layout.Floating(**layout_theme),
-    # layout.RatioTile(**layout_theme),
-    # layout.Max(**layout_theme),
 ]
 
 
 # WIDGETS FOR THE BAR
 
 
-# def init_widgets_defaults():
-#     return dict(font="Noto Sans", fontsize=12, padding=2, background=colors[1])
-
-
-# widget_defaults = init_widgets_defaults()
-
-
-def init_widgets_list():
-    FONT_LARGE = 14
-    FONT_SMALL = 10
-    FONT_NOTO = "Noto Sans Bold"
-    FONT_AWESOME = "FontAwesome Bold"
-    SEPERATOR = widget.Sep(
-        linewidth=1,
-        padding=10,
-        size_percent=50,
-        foreground=colors[2],
-        background=colors[1],
-    )
-
-    prompt = "{0}@{1}: ".format(os.environ["USER"], socket.gethostname())
-    widgets_list = [
-        widget.CurrentLayoutIcon(
-            font=FONT_NOTO,
-            scale=0.5,
-            fontsize=FONT_SMALL,
-            margin_y=-1,
-            foreground=colors[8],
-            background=colors[1],
-        ),
-        SEPERATOR,
-        widget.GroupBox(
-            font=FONT_AWESOME,
-            fontsize=FONT_LARGE,
-            margin_y=2,
-            margin_x=0,
-            padding_y=0,
-            padding_x=8,
-            borderwidth=0,
-            disable_drag=True,
-            active=colors[7],
-            inactive=colors[6],
-            # rounded = False,
-            highlight_method="block",
-            this_current_screen_border=colors[5],
-            foreground=colors[2],
-            background=colors[1],
-        ),
-        widget.Sep(
-            linewidth=10,
-            padding=20,
-            size_percent=5,
-            foreground=colors[2],
-            background=colors[1],
-        ),
-        widget.Sep(
-            linewidth=0,
-            padding=20,
-            size_percent=5,
-            foreground=colors[0],
-            background=colors[5],
-        ),
-        widget.WindowName(
-            font=FONT_AWESOME,
-            fontsize=FONT_LARGE,
-            foreground=colors[0],
-            background=colors[5],
-        ),
-        widget.Clock(
-            font=FONT_AWESOME,
-            fontsize=FONT_LARGE,
-            foreground=colors[0],
-            background=colors[5],
-            format="%H:%M",
-        ),
-        widget.Sep(
-            linewidth=0,
-            padding=20,
-            size_percent=5,
-            foreground=colors[0],
-            background=colors[5],
-        ),
-        widget.Sep(
-            linewidth=10,
-            padding=30,
-            size_percent=5,
-            foreground=colors[2],
-            background=colors[1],
-        ),
-        
-        # widget.Clock(
-        #     font=FONT_AWESOME,
-        #     fontsize=FONT_LARGE,
-        #     foreground=colors[5],
-        #     background=colors[1],
-        #     format="%d.%m.%Y",
-        # ),
-        # SEPERATOR,
-        widget.Battery(
-            font=FONT_AWESOME,
-            fontsize=FONT_LARGE,
-            update_interval=10,
-            format="{percent:2.0%} \uf241",
-            foreground=colors[5],
-            background=colors[1],
-        ),
-        SEPERATOR,
-        widget.NetGraph(
-            background=colors[1],
-            fill_color=colors[5],
-            border_color=colors[7][0],
-            graph_color=colors[9][0],
-            bangwidth_type='down',
-            frequency=1,
-            border_width=1,
-            interface='wlp8s0'
-            ),
-        SEPERATOR,
-        widget.TextBox(
-            text=requests.get('http://ip.42.pl/raw').text,
-            font="FontAwesome",
-            fontsize=FONT_SMALL
-        ),
-        widget.Systray(background=colors[1], icon_size=20, padding=4),
-    ]
-    return widgets_list
-
-
-widgets_list = init_widgets_list()
 
 
 def init_widgets_screen1():
@@ -432,7 +261,7 @@ widgets_screen2 = init_widgets_screen2()
 
 def init_screens():
     return [
-        Screen(top=bar.Bar(widgets=init_widgets_screen1(), size=26)),
+        Screen(top=bar.Bar(widgets=init_widgets_screen1(), size=20)),
         Screen(top=bar.Bar(widgets=init_widgets_screen2(), size=26)),
     ]
 
