@@ -618,6 +618,8 @@ def start_once():
 def start_always():
     # Set the cursor to something sane in X
     subprocess.Popen(['xsetroot', '-cursor_name', 'left_ptr'])
+    ip_address = subprocess.Popen(["curl", "ifconfig.me"], stdout=subprocess.PIPE)
+
 
 @hook.subscribe.client_new
 def set_floating(window):

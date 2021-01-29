@@ -58,3 +58,4 @@ run volumeicon &
 #run spotify &
 #run atom &
 #run telegram-desktop &
+run light-locker &
