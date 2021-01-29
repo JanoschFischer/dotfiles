@@ -17,7 +17,7 @@ def init_keys():
     Key([], "F12", lazy.spawn("xfce4-terminal --drop-down")),
 
     # Bindings [mod]:
-    Key([mod], "t", lazy.spawn(TERMINAL)),
+    Key([mod], "t", lazy.spawn("alacritty")),
     Key([mod], "Return", lazy.spawn(TERMINAL)),
     Key([mod], "p", lazy.spawn("rofi -show run")),
     Key([mod], "b", lazy.spawn("brave")),

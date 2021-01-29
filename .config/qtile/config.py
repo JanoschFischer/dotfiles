@@ -1,36 +1,9 @@
-# Copyright (c) 2010 Aldo Cortesi
-# Copyright (c) 2010, 2014 dequis
-# Copyright (c) 2012 Randall Ma
-# Copyright (c) 2012-2014 Tycho Andersen
-# Copyright (c) 2012 Craig Barnes
-# Copyright (c) 2013 horsik
-# Copyright (c) 2013 Tao Sauvage
-#
-# Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documentation files (the "Software"), to deal
-# in the Software without restriction, including without limitation the rights
-# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-# copies of the Software, and to permit persons to whom the Software is
-# furnished to do so, subject to the following conditions:
-#
-# The above copyright notice and this permission notice shall be included in
-# all copies or substantial portions of the Software.
-#
-# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-# SOFTWARE.
-
 
 import os
 import subprocess
 from libqtile.config import Drag, Key, Screen, Group, Drag
 from libqtile.lazy import lazy
 from libqtile import layout, bar, hook
-from libqtile.widget import Spacer
 
 
 from colors import init_colors
@@ -52,6 +25,7 @@ TERMINAL = "urxvt"
 EDITOR = "code"
 PROGRAMS = "rofi -show run"
 
+focus_on_window_activation = 'smart'
 
 @lazy.function
 def window_to_prev_group(qtile):
@@ -67,138 +41,14 @@ def window_to_next_group(qtile):
         qtile.currentWindow.togroup(qtile.groups[i + 1].name)
 
 
-# keys = [
-#     # FUNCTION KEYS
-#     Key([], "F12", lazy.spawn("xfce4-terminal --drop-down")),
-
-#     # Bindings [mod]:
-#     Key([mod], "t", lazy.spawn(TERMINAL)),
-#     Key([mod], "Return", lazy.spawn(TERMINAL)),
-#     Key([mod], "p", lazy.spawn("rofi -show run")),
-#     Key([mod], "b", lazy.spawn("brave")),
-#     Key([mod], "x", lazy.spawn("arcolinux-logout")),
-#     Key([mod], "Escape", lazy.spawn("xkill")),
-#     Key([mod], "F8", lazy.spawn("thunar")),
-
-#     Key([mod], "f", lazy.window.toggle_fullscreen()),
-#     Key([mod], "q", lazy.window.kill()),
-#     Key([mod], "r", lazy.restart()),
-
-#     Key(["mod1", "control"], "r", lazy.spawn("rofi-theme-selector")),
-
-#     Key([mod2], "Print", lazy.spawn("xfce4-screenshooter")),
-#     Key([mod2, "shift"], "Print", lazy.spawn("gnome-screenshot -i")),
-
-#     # INCREASE/DECREASE BRIGHTNESS
-#     Key([], "XF86MonBrightnessUp", lazy.spawn("xbacklight -inc 5")),
-#     Key([], "XF86MonBrightnessDown", lazy.spawn("xbacklight -dec 5")),
-#     # INCREASE/DECREASE/MUTE VOLUME
-#     Key([], "XF86AudioMute", lazy.spawn("amixer -q set Master toggle")),
-#     Key([], "XF86AudioLowerVolume", lazy.spawn("amixer -q set Master 5%-")),
-#     Key([], "XF86AudioRaiseVolume", lazy.spawn("amixer -q set Master 5%+")),
-
-#     # QTILE LAYOUT KEYS
-#     Key([mod], "n", lazy.layout.normalize()),
-#     Key([mod], "space", lazy.next_layout()),
-
-#     # CHANGE FOCUS
-#     Key([mod], "Up", lazy.layout.up()),
-#     Key([mod], "Down", lazy.layout.down()),
-#     Key([mod], "Left", lazy.layout.left()),
-#     Key([mod], "Right", lazy.layout.right()),
-#     Key([mod], "k", lazy.layout.up()),
-#     Key([mod], "j", lazy.layout.down()),
-#     Key([mod], "h", lazy.layout.left()),
-#     Key([mod], "l", lazy.layout.right()),
-
-#     # RESIZE UP, DOWN, LEFT, RIGHT
-#     Key(
-#         [mod, "control"],
-#         "l",
-#         lazy.layout.grow_right(),
-#         lazy.layout.grow(),
-#         lazy.layout.increase_ratio(),
-#         lazy.layout.delete(),
-#     ),
-#     Key(
-#         [mod, "control"],
-#         "Right",
-#         lazy.layout.grow_right(),
-#         lazy.layout.grow(),
-#         lazy.layout.increase_ratio(),
-#         lazy.layout.delete(),
-#     ),
-#     Key(
-#         [mod, "control"],
-#         "h",
-#         lazy.layout.grow_left(),
-#         lazy.layout.shrink(),
-#         lazy.layout.decrease_ratio(),
-#         lazy.layout.add(),
-#     ),
-#     Key(
-#         [mod, "control"],
-#         "Left",
-#         lazy.layout.grow_left(),
-#         lazy.layout.shrink(),
-#         lazy.layout.decrease_ratio(),
-#         lazy.layout.add(),
-#     ),
-#     Key(
-#         [mod, "control"],
-#         "k",
-#         lazy.layout.grow_up(),
-#         lazy.layout.grow(),
-#         lazy.layout.decrease_nmaster(),
-#     ),
-#     Key(
-#         [mod, "control"],
-#         "Up",
-#         lazy.layout.grow_up(),
-#         lazy.layout.grow(),
-#         lazy.layout.decrease_nmaster(),
-#     ),
-#     Key(
-#         [mod, "control"],
-#         "j",
-#         lazy.layout.grow_down(),
-#         lazy.layout.shrink(),
-#         lazy.layout.increase_nmaster(),
-#     ),
-#     Key(
-#         [mod, "control"],
-#         "Down",
-#         lazy.layout.grow_down(),
-#         lazy.layout.shrink(),
-#         lazy.layout.increase_nmaster(),
-#     ),
-
-#     # FLIP LAYOUT FOR MONADTALL/MONADWIDE
-#     Key([mod, "shift"], "f", lazy.layout.flip()),
-#     # FLIP LAYOUT FOR BSP
-#     Key([mod, "mod1"], "k", lazy.layout.flip_up()),
-#     Key([mod, "mod1"], "j", lazy.layout.flip_down()),
-#     Key([mod, "mod1"], "l", lazy.layout.flip_right()),
-#     Key([mod, "mod1"], "h", lazy.layout.flip_left()),
-#     # MOVE WINDOWS UP OR DOWN BSP LAYOUT
-#     Key([mod, "shift"], "k", lazy.layout.shuffle_up()),
-#     Key([mod, "shift"], "j", lazy.layout.shuffle_down()),
-#     Key([mod, "shift"], "h", lazy.layout.shuffle_left()),
-#     Key([mod, "shift"], "l", lazy.layout.shuffle_right()),
-#     # MOVE WINDOWS UP OR DOWN MONADTALL/MONADWIDE LAYOUT
-#     Key([mod, "shift"], "Up", lazy.layout.shuffle_up()),
-#     Key([mod, "shift"], "Down", lazy.layout.shuffle_down()),
-#     Key([mod, "shift"], "Left", lazy.layout.swap_left()),
-#     Key([mod, "shift"], "Right", lazy.layout.swap_right()),
-#     # TOGGLE FLOATING LAYOUT
-#     Key([mod, "shift"], "space", lazy.window.toggle_floating()),
-# ]
-
 groups = []
+
 NUM_OF_GROUPS = 5
 
 group_names = [str(i) for i in range(1, NUM_OF_GROUPS + 1)]
-group_labels = [str(i) for i in range(1, NUM_OF_GROUPS + 1)]
+group_labels = ["", "", "", "", ""]
+
+# group_labels = [str(i) for i in range(1, NUM_OF_GROUPS + 1)]
 group_layouts = ["monadtall" for i in range(NUM_OF_GROUPS)]
 
 for i in range(len(group_names)):
@@ -226,9 +76,6 @@ for i in groups:
     )
 
 
-
-
-
 layouts = [
     layout.MonadTall(
         margin=10, 
@@ -240,29 +87,25 @@ layouts = [
 ]
 
 
-# WIDGETS FOR THE BAR
-
-
-
 
 def init_widgets_screen1():
     widgets_screen1 = init_widgets_list()
     return widgets_screen1
 
 
-def init_widgets_screen2():
-    widgets_screen2 = init_widgets_list()
-    return widgets_screen2
+# def init_widgets_screen2():
+#     widgets_screen2 = init_widgets_list()
+#     return widgets_screen2
 
 
 widgets_screen1 = init_widgets_screen1()
-widgets_screen2 = init_widgets_screen2()
+# widgets_screen2 = init_widgets_screen2()
 
 
 def init_screens():
     return [
-        Screen(top=bar.Bar(widgets=init_widgets_screen1(), size=20)),
-        Screen(top=bar.Bar(widgets=init_widgets_screen2(), size=26)),
+        Screen(top=bar.Bar(margin=[5,10,0,10],widgets=init_widgets_screen1(), size=20, opacity=0.9)),
+        # Screen(top=bar.Bar(widgets=init_widgets_screen2(), size=26)),
     ]
 
 
@@ -284,44 +127,6 @@ mouse = [
 
 dgroups_key_binder = None
 dgroups_app_rules = []
-
-# ASSIGN APPLICATIONS TO A SPECIFIC GROUPNAME
-# BEGIN
-
-# @hook.subscribe.client_new
-# def assign_app_group(client):
-#     d = {}
-#     #########################################################
-#     ################ assgin apps to groups ##################
-#     #########################################################
-#     d["1"] = ["Navigator", "Firefox", "Vivaldi-stable", "Vivaldi-snapshot", "Chromium", "Google-chrome", "Brave", "Brave-browser",
-#               "navigator", "firefox", "vivaldi-stable", "vivaldi-snapshot", "chromium", "google-chrome", "brave", "brave-browser", ]
-#     d["2"] = [ "Atom", "Subl3", "Geany", "Brackets", "Code-oss", "Code", "TelegramDesktop", "Discord",
-#                "atom", "subl3", "geany", "brackets", "code-oss", "code", "telegramDesktop", "discord", ]
-#     d["3"] = ["Inkscape", "Nomacs", "Ristretto", "Nitrogen", "Feh",
-#               "inkscape", "nomacs", "ristretto", "nitrogen", "feh", ]
-#     d["4"] = ["Gimp", "gimp" ]
-#     d["5"] = ["Meld", "meld", "org.gnome.meld" "org.gnome.Meld" ]
-#     d["6"] = ["Vlc","vlc", "Mpv", "mpv" ]
-#     d["7"] = ["VirtualBox Manager", "VirtualBox Machine", "Vmplayer",
-#               "virtualbox manager", "virtualbox machine", "vmplayer", ]
-#     d["8"] = ["Thunar", "Nemo", "Caja", "Nautilus", "org.gnome.Nautilus", "Pcmanfm", "Pcmanfm-qt",
-#               "thunar", "nemo", "caja", "nautilus", "org.gnome.nautilus", "pcmanfm", "pcmanfm-qt", ]
-#     d["9"] = ["Evolution", "Geary", "Mail", "Thunderbird",
-#               "evolution", "geary", "mail", "thunderbird" ]
-#     d["0"] = ["Spotify", "Pragha", "Clementine", "Deadbeef", "Audacious",
-#               "spotify", "pragha", "clementine", "deadbeef", "audacious" ]
-#     ##########################################################
-#     wm_class = client.window.get_wm_class()[0]
-#
-#     for i in range(len(d)):
-#         if wm_class in list(d.values())[i]:
-#             group = list(d.keys())[i]
-#             client.togroup(group)
-#             client.group.cmd_toscreen()
-
-# END
-# ASSIGN APPLICATIONS TO A SPECIFIC GROUPNAME
 
 
 main = None
